@@ -50,11 +50,21 @@ public class CityEntity implements MasterEntity {
 
     @Override
     public String toString() {
-        return "CityEntity{" +
-                "cityId=" + cityId +
-                ", cityName='" + cityName + '\'' +
-                ", isValid=" + isValid +
-                ", district=" + district.getDistName() +
+        return "{" +
+                "\"cityId\":" + cityId +
+                ", \"cityName\":\"" + cityName + '\"' +
+                ", \"isValid\":" + isValid +
+                ", \"district\":\"" + district.getDistName() + "\"" +
                 '}';
+    }
+
+    @Override
+    public Integer uniqueCode() {
+        return this.cityId * this.cityName.length() * 31;
+    }
+
+    @Override
+    public Integer getId() {
+        return this.cityId;
     }
 }

@@ -72,12 +72,22 @@ public class DistrictEntity implements MasterEntity {
 
     @Override
     public String toString() {
-        return "DistrictEntity{" +
-                "distId=" + distId +
-                ", distName='" + distName + '\'' +
-                ", isValid=" + isValid +
-                ", cities=" + cities +
-                ", state=" + state.getStateName() +
+        return "{" +
+                "\"distId\":" + distId +
+                ", \"distName\":\"" + distName + '\"' +
+                ", \"isValid\":" + isValid +
+                ", \"cities\":" + cities +
+                ", \"state\":\"" + state.getStateName() + '\"' +
                 '}';
+    }
+
+    @Override
+    public Integer uniqueCode() {
+        return this.distId * this.distName.length() * 31;
+    }
+
+    @Override
+    public Integer getId() {
+        return this.distId;
     }
 }

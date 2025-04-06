@@ -387,6 +387,82 @@ public class Main {
         StateDto stateDto = (StateDto) EntityDtoMapper.mapToDto(stateEntity, entityDtoMap);
         System.out.println(stateDto);
 
+        System.out.println("**************************************************");
+        System.out.println("**************************************************");
+        System.out.println("**************************************************");
+
+
+        // copy
+        StateDto state1Copy = new StateDto(100, "s-1", true);
+        DistrictDto districtCopy = new DistrictDto(11, "d-1", true);
+        DistrictDto dist1Copy = new DistrictDto(12, "d-2", true);
+        DistrictDto dist2Copy = new DistrictDto(13, "d-3", true);
+        DistrictDto dist3Copy = new DistrictDto(14, "d-4", true);
+        DistrictDto dist4Copy = new DistrictDto(15, "d-5", true);
+
+
+        CityDto city1Copy = new CityDto(21, "c-1", true);
+        CityDto city2Copy = new CityDto(22, "c-2", true);
+        CityDto city3Copy = new CityDto(23, "c-3", true);
+        CityDto city4Copy = new CityDto(24, "c-4", true);
+        CityDto city5Copy = new CityDto(25, "c-5", true);
+        CityDto city6Copy = new CityDto(26, "c-6", true);
+        CityDto city7Copy = new CityDto(27, "c-7", true);
+        CityDto city8Copy = new CityDto(28, "c-8", true);
+        CityDto city9Copy = new CityDto(29, "c-9", true);
+        CityDto city10Copy = new CityDto(30, "c-10", true);
+        CityDto city11Copy = new CityDto(31, "c-11", true);
+        CityDto city12Copy = new CityDto(32, "c-12", true);
+        CityDto city13Copy = new CityDto(33, "c-13", true);
+        CityDto city14Copy = new CityDto(34, "c-14", true);
+        CityDto city15Copy = new CityDto(35, "c-15", true);
+
+
+        state1Copy.addDistrict(districtCopy);
+//        state1Copy.addDistrict(dist1Copy);
+        state1Copy.addDistrict(dist2Copy);
+        state1Copy.addDistrict(dist3Copy);
+        state1Copy.addDistrict(dist4Copy);
+        districtCopy.setState(state1Copy);
+        dist1Copy.setState(state1Copy);
+        dist2Copy.setState(state1Copy);
+        dist3Copy.setState(state1Copy);
+        dist4Copy.setState(state1Copy);
+
+        districtCopy.setCities(new ArrayList<>(List.of(city1Copy, city2Copy, city3Copy)));
+        city1Copy.setDistrict(districtCopy);
+        city2Copy.setDistrict(districtCopy);
+        city3Copy.setDistrict(districtCopy);
+
+        dist1Copy.setCities(new ArrayList<>(List.of(city4Copy, city5Copy, city6Copy)));
+        city4Copy.setDistrict(dist1Copy);
+        city5Copy.setDistrict(dist1Copy);
+        city6Copy.setDistrict(dist1Copy);
+
+//        dist2Copy.setCities(new ArrayList<>(List.of(city7Copy, city8Copy, city9Copy)));
+        dist2Copy.setCities(new ArrayList<>(List.of(city7Copy, city8Copy)));
+        city7Copy.setDistrict(dist2Copy);
+        city8Copy.setDistrict(dist2Copy);
+        city9Copy.setDistrict(dist2Copy);
+
+        dist3Copy.setCities(new ArrayList<>(List.of(city10Copy, city11Copy, city12Copy, city9Copy)));
+        city10Copy.setDistrict(dist3Copy);
+        city11Copy.setDistrict(dist3Copy);
+        city12Copy.setDistrict(dist3Copy);
+        city9Copy.setDistrict(dist3Copy);
+
+        dist4Copy.setCities(new ArrayList<>(List.of(city13Copy, city14Copy, city15Copy)));
+        city13Copy.setDistrict(dist4Copy);
+        city14Copy.setDistrict(dist4Copy);
+        city15Copy.setDistrict(dist4Copy);
+
+        StateEntity stateEntityCopy = (StateEntity) EntityDtoMapper.mapToEntity(state1Copy, dtoEntityMap);
+
+        System.out.println(stateEntity);
+        System.out.println(stateEntityCopy);
+        EntityDtoMapper.merge(stateEntity, stateEntityCopy);
+        System.out.println(stateEntity);
+
 
     }
 

@@ -53,11 +53,21 @@ public class StateEntity implements MasterEntity {
 
     @Override
     public String toString() {
-        return "StateEntity{" +
-                "stateId=" + stateId +
-                ", stateName='" + stateName + '\'' +
-                ", isValid=" + isValid +
-                ", districts=" + districts +
+        return "{" +
+                "\"stateId\":" + stateId +
+                ", \"stateName\":\"" + stateName + '\"' +
+                ", \"isValid\":" + isValid +
+                ", \"districts\":" + districts +
                 '}';
+    }
+
+    @Override
+    public Integer uniqueCode() {
+        return this.stateId * this.stateName.length() * 31;
+    }
+
+    @Override
+    public Integer getId() {
+        return this.stateId;
     }
 }

@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -11,13 +12,11 @@ import java.util.*;
  */
 public class EntityDtoMapper {
     private record ChildParentPair<C, P>(C child, P parent) {
-
     }
 
 
     public static MasterEntity mapToEntity(MasterDto dto, Map<Class<? extends MasterDto>, Class<? extends MasterEntity>> dtoEntityMap) {
         try {
-
             // no adj required as the entity already have the node.
             Queue<ChildParentPair<MasterDto, MasterEntity>> queue = new LinkedList<>();
             Set<Integer> visited = new HashSet<>();
@@ -49,7 +48,7 @@ public class EntityDtoMapper {
                             }
                         }
                         vfield.set(v, new ArrayList<MasterEntity>());
-                    } else if (!isSimpleType(df)) {
+                    } else if (isComplexType(df)) {
                         // set the parent object in the child v.
                         if (u.parent != null && u.parent.getClass().isAssignableFrom(vfield.getType())) {
                             vfield.set(v, u.parent);
@@ -122,7 +121,7 @@ public class EntityDtoMapper {
                             }
                         }
                         vfield.set(v, new ArrayList<MasterEntity>());
-                    } else if (!isSimpleType(df)) {
+                    } else if (isComplexType(df)) {
                         // set the parent object in the child v.
                         if (u.parent != null && u.parent.getClass().isAssignableFrom(vfield.getType())) {
                             vfield.set(v, u.parent);
@@ -161,11 +160,103 @@ public class EntityDtoMapper {
     }
 
 
-    private static boolean isSimpleType(Field f) {
-        return Integer.class.isAssignableFrom(f.getType()) || Long.class.isAssignableFrom(f.getType()) ||
-                Double.class.isAssignableFrom(f.getType()) || Boolean.class.isAssignableFrom(f.getType()) ||
-                Float.class.isAssignableFrom(f.getType()) || String.class.isAssignableFrom(f.getType());
+    public static void merge(MasterEntity og, MasterEntity nu) {
+        if (nu == null) {
+            return;
+        }
+        try {
+
+            Queue<ChildParentPair<MasterEntity, MasterEntity>> queueOg = new LinkedList<>();
+            Queue<ChildParentPair<MasterEntity, MasterEntity>> queueNu = new LinkedList<>();
+
+            Set<Integer> visitedOg = new HashSet<>();
+            Set<Integer> visitedNu = new HashSet<>();
+
+            queueOg.offer(new ChildParentPair<>(og, null));
+            queueNu.offer(new ChildParentPair<>(nu, null));
+
+            visitedOg.add(og.hashCode());
+            visitedNu.add(nu.hashCode());
+
+            while (!queueOg.isEmpty() && !queueNu.isEmpty()) {
+                ChildParentPair<MasterEntity, MasterEntity> uOg = queueOg.poll();
+                ChildParentPair<MasterEntity, MasterEntity> uNu = queueNu.poll();
+                // iterating for the children
+                for (Field ogField : uOg.child.getClass().getDeclaredFields()) {
+                    ogField.setAccessible(true);
+                    Field nuField = uNu.child.getClass().getDeclaredField(ogField.getName());
+                    nuField.setAccessible(true);
+
+                    // if og field is list, same goes for nu field.
+                    if (Collection.class.isAssignableFrom(ogField.getType())) {
+                        Object valueOg = ogField.get(uOg.child);
+                        Object valueNu = nuField.get(uNu.child);
+
+                        Collection<MasterEntity> listOg = (Collection<MasterEntity>) valueOg;
+                        Collection<MasterEntity> listNu = (Collection<MasterEntity>) valueNu;
+
+                        Map<Integer, MasterEntity> mapOg = listOg.stream().collect(Collectors.toMap(MasterEntity::getId, i -> i));
+                        Map<Integer, MasterEntity> mapNu = listNu.stream().collect(Collectors.toMap(MasterEntity::getId, i -> i));
+
+                        Collection<MasterEntity> itemOgRemoveList = new ArrayList<>();
+
+                        for (MasterEntity itemOg : listOg) {
+                            // check for removal
+                            if (!mapNu.containsKey(itemOg.getId())) {
+                                for (Field itemOgField : itemOg.getClass().getDeclaredFields()) {
+                                    itemOgField.setAccessible(true);
+                                    if (isComplexType(itemOgField) && uOg.child.getClass().isAssignableFrom(itemOgField.getType())) {
+                                        // remove the child parent mapping.
+                                        itemOgField.set(itemOg, null);
+                                    }
+                                }
+                                // add the child to remove list.
+                                itemOgRemoveList.add(itemOg);
+                            } else {
+                                // traverse the bfs that are untouched.
+                                if (!visitedOg.contains(itemOg.hashCode())) {
+                                    visitedOg.add(itemOg.hashCode());
+                                    queueOg.offer(new ChildParentPair<>(itemOg, uOg.child));
+                                }
+                            }
+                        }
+                        // finally remove the children
+                        itemOgRemoveList.forEach(listOg::remove);
+
+                        for (MasterEntity itemNu : listNu) {
+                            // check for insertion.
+                            if (itemNu.getId() == null || !mapOg.containsKey(itemNu.getId())) {
+                                for (Field itemNuField : itemNu.getClass().getDeclaredFields()) {
+                                    itemNuField.setAccessible(true);
+                                    if (isComplexType(itemNuField) && uOg.child.getClass().isAssignableFrom(itemNuField.getType())) {
+                                        // add the og parent in parent relation.
+                                        itemNuField.set(itemNu, uOg.child);
+                                    }
+                                }
+                                // set the child in the ogList
+                                listOg.add(itemNu);
+                            } else {
+                                // traverse the bfs that are untouched.
+                                if (!visitedNu.contains(itemNu.hashCode())) {
+                                    visitedNu.add(itemNu.hashCode());
+                                    queueNu.offer(new ChildParentPair<>(itemNu, uNu.child));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
+
+    private static boolean isComplexType(Field f) {
+        return !Integer.class.isAssignableFrom(f.getType()) && !Long.class.isAssignableFrom(f.getType()) &&
+                !Double.class.isAssignableFrom(f.getType()) && !Boolean.class.isAssignableFrom(f.getType()) &&
+                !Float.class.isAssignableFrom(f.getType()) && !String.class.isAssignableFrom(f.getType());
+    }
+
 }
 
 
