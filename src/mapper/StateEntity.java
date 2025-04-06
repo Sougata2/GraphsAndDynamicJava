@@ -62,11 +62,6 @@ public class StateEntity implements MasterEntity {
     }
 
     @Override
-    public Integer uniqueCode() {
-        return this.stateId * this.stateName.length() * 31;
-    }
-
-    @Override
     public Integer getId() {
         return this.stateId;
     }

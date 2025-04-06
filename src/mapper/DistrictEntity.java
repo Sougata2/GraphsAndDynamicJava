@@ -81,10 +81,6 @@ public class DistrictEntity implements MasterEntity {
                 '}';
     }
 
-    @Override
-    public Integer uniqueCode() {
-        return this.distId * this.distName.length() * 31;
-    }
 
     @Override
     public Integer getId() {
