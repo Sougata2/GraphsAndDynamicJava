@@ -243,6 +243,10 @@ public class EntityDtoMapper {
                                 }
                             }
                         }
+                    } else if (!isComplexType(ogField) && uOg.parent == null) {
+                        // update the attribute of the first parent only.
+                        Object valueNu = nuField.get(uNu.child);
+                        if (valueNu != null) ogField.set(uOg.child, valueNu);
                     }
                 }
             }

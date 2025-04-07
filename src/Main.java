@@ -393,7 +393,7 @@ public class Main {
 
 
         // copy
-        StateDto state1Copy = new StateDto(100, "s-1", true);
+        StateDto state1Copy = new StateDto(100, "state-1", true);
         DistrictDto districtCopy = new DistrictDto(11, "d-1", true);
         DistrictDto dist1Copy = new DistrictDto(12, "d-2", true);
         DistrictDto dist2Copy = new DistrictDto(13, "d-3", true);
@@ -401,7 +401,7 @@ public class Main {
         DistrictDto dist4Copy = new DistrictDto(15, "d-5", true);
 
 
-        CityDto city1Copy = new CityDto(21, "c-1", true);
+        CityDto city1Copy = new CityDto(21, "city-1", true);
         CityDto city2Copy = new CityDto(22, "c-2", true);
         CityDto city3Copy = new CityDto(23, "c-3", true);
         CityDto city4Copy = new CityDto(24, "c-4", true);
